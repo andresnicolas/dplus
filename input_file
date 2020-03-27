@@ -1,0 +1,38 @@
+
+%_________________________________________________________________________________
+%                                        Set to 1 if a tabulated w(a) will be used
+
+UseTab_wEOS 0
+
+%_________________________________________________________________________________
+%                                              If UseTab_wEOS = 1, define the file 
+
+wEOSFile my_tabulated_wa.dat
+
+%_________________________________________________________________________________
+%                                                          Name of the output file
+
+OutputFile output_file.dat
+
+%_________________________________________________________________________________
+%                                                   Cosmological parameters at z=0
+
+OmegaMatter0     0.25 
+OmegaDarkEnergy0 0.75
+OmegaRadiation0  0.0 
+OmegaCurvature0  0.0 
+Hubble0          70.0
+
+%_________________________________________________________________________________
+%               Dark energy EOS w(a) = w0 + wa*(1 - a). Ignored if UseTab_wEOS = 1
+
+w0EOS  -1.0
+waEOS   0.0
+
+%_________________________________________________________________________________
+%                                              Redshift range and number of points 
+
+InitialRedshift 10.0
+FinalRedshift    0.0
+Nbins           1000
+
