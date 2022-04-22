@@ -20,6 +20,8 @@ int    SizeTable;
 double *ScaleFactorTable;
 double *DarkEnergyEoSTable;
 double *DarkEnergyFactorTable;
+double *DarkEnergyEoSTable_y2;
+double *DarkEnergyFactorTable_y2;
 
 int    Ntab;
 double *ScaleFactor;

@@ -47,6 +47,8 @@ extern int    SizeTable;
 extern double *ScaleFactorTable;
 extern double *DarkEnergyEoSTable;
 extern double *DarkEnergyFactorTable;
+extern double *DarkEnergyEoSTable_y2;
+extern double *DarkEnergyFactorTable_y2;
 
 // For order 2 growth factor
 

@@ -34,6 +34,8 @@ void set_dark_energy_tables(void)
   ScaleFactorTable = (double *) malloc(SizeTable*sizeof(double));
   DarkEnergyEoSTable = (double *) malloc(SizeTable*sizeof(double));
   DarkEnergyFactorTable = (double *) malloc(SizeTable*sizeof(double));
+  DarkEnergyEoSTable_y2 = (double *) malloc(SizeTable*sizeof(double));
+  DarkEnergyFactorTable_y2 = (double *) malloc(SizeTable*sizeof(double));
 
   fd = fopen(filename,"r");
 
@@ -43,7 +45,10 @@ void set_dark_energy_tables(void)
 
   for (i=0; i<SizeTable; i++) 
       DarkEnergyFactorTable[i] = exp(3.0*qromb(dark_energy_factor_integ,log(ScaleFactorTable[i]),0.0,EPS));	  
-   
+ 
+  spline(ScaleFactorTable, DarkEnergyEoSTable, SizeTable, 1.0e30, 1.0e30, DarkEnergyEoSTable_y2);   
+  spline(ScaleFactorTable, DarkEnergyFactorTable, SizeTable, 1.0e30, 1.0e30, DarkEnergyFactorTable_y2);   
+
 }
 
 double dark_energy_eos(double a)
@@ -57,15 +62,8 @@ double dark_energy_eos(double a)
 
   } else {
 
-     locate(ScaleFactorTable, SizeTable, a, &indx);
+     splint(ScaleFactorTable, DarkEnergyEoSTable, DarkEnergyEoSTable_y2, SizeTable, a, &eos);
 
-     y2 = DarkEnergyEoSTable[indx];
-     y1 = DarkEnergyEoSTable[indx-1];
-     x2 = ScaleFactorTable[indx];
-     x1 = ScaleFactorTable[indx-1];
-
-     eos = (y2 - y1) / (x2 - x1) * (a - x1) + y1;
-  
   }
 
   return eos;
@@ -82,7 +80,7 @@ double dark_energy_factor_integ(double lna)
 double dark_energy_factor(double a)
 {
   int    indx;	
-  double f,y2,y1,x2,x1;
+  double f;
 	
   if (UseTab_wEoS == 0) {
 
@@ -96,14 +94,7 @@ double dark_energy_factor(double a)
 
   } else {
 
-     locate(ScaleFactorTable, SizeTable, a, &indx);
-
-     y2 = DarkEnergyFactorTable[indx];
-     y1 = DarkEnergyFactorTable[indx-1];
-     x2 = ScaleFactorTable[indx];
-     x1 = ScaleFactorTable[indx-1];
-
-     f = (y2 - y1) / (x2 - x1) * (a - x1) + y1;
+     splint(ScaleFactorTable, DarkEnergyFactorTable, DarkEnergyFactorTable_y2, SizeTable, a, &f);
 
   }
 
