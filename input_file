@@ -1,0 +1,43 @@
+
+%_________________________________________________________________________________
+%                                        Set to 1 if a tabulated w(a) will be used
+
+UseTab_wEoS 0
+
+%_________________________________________________________________________________
+%                                      Set to 1 to compute 2nd order growth factor
+
+SecondOrderDplus 1
+
+%_________________________________________________________________________________
+%                                              If UseTab_wEoS = 1, define the file 
+
+wEoSFile ../../MyGadget2/Gadget4/test_64/wofa_ede.dat
+
+%_________________________________________________________________________________
+%                                                          Name of the output file
+
+OutputFile t2.dat
+
+%_________________________________________________________________________________
+%                                                   Cosmological parameters at z=0
+
+OmegaMatter0     0.318584094
+OmegaDarkEnergy0 0.656415906
+OmegaRadiation0  0.00 
+OmegaCurvature0  0.00 
+Hubble0          67.0
+
+%_________________________________________________________________________________
+%               Dark energy EoS w(a) = w0 + wa*(1 - a). Ignored if UseTab_wEoS = 1
+
+w0EoS  -1.0
+waEoS  0.0 
+
+%_________________________________________________________________________________
+%                                              Redshift range and number of points 
+
+InitialRedshift   10.0
+FinalRedshift     0.0
+Nbins             10000
+
