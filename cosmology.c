@@ -1,6 +1,10 @@
 
-#include "allvars.h"
-#include "proto.h"
+#include "io.h"
+#include "cosmology.h"
+#include "numrec.h"
+
+struct eos_table DEtab;
+struct growth_table Gtab;
 
 int count_lines(char *filename) 
 {
@@ -24,48 +28,37 @@ int count_lines(char *filename)
 
 void set_dark_energy_tables(void)
 {
-  FILE *fd;
-  int  i;
-  char filename[200];
 
-  sprintf(filename,"%s",wEoSFile);
+  DEtab.Nbins = count_lines(P.wEoSFile);
+  DEtab.ScaleFactor = (double *) malloc(DEtab.Nbins*sizeof(double));
+  DEtab.EoS = (double *) malloc(DEtab.Nbins*sizeof(double));
+  DEtab.Factor = (double *) malloc(DEtab.Nbins*sizeof(double));
+  DEtab.EoS_y2 = (double *) malloc(DEtab.Nbins*sizeof(double));
+  DEtab.Factor_y2 = (double *) malloc(DEtab.Nbins*sizeof(double));
 
-  SizeTable = count_lines(filename);
-  ScaleFactorTable = (double *) malloc(SizeTable*sizeof(double));
-  DarkEnergyEoSTable = (double *) malloc(SizeTable*sizeof(double));
-  DarkEnergyFactorTable = (double *) malloc(SizeTable*sizeof(double));
-  DarkEnergyEoSTable_y2 = (double *) malloc(SizeTable*sizeof(double));
-  DarkEnergyFactorTable_y2 = (double *) malloc(SizeTable*sizeof(double));
+  FILE *fd = fopen(P.wEoSFile,"r");
 
-  fd = fopen(filename,"r");
-
-  for (i=0;i<SizeTable;i++) 
-      fscanf(fd,"%lf %lf ",&ScaleFactorTable[i],&DarkEnergyEoSTable[i]);
+  for (int i=0;i<DEtab.Nbins;i++) 
+      fscanf(fd,"%lf %lf ",&DEtab.ScaleFactor[i],&DEtab.EoS[i]);
   fclose(fd);
 
-  for (i=0; i<SizeTable; i++) 
-      DarkEnergyFactorTable[i] = exp(3.0*qromb(dark_energy_factor_integ,log(ScaleFactorTable[i]),0.0,EPS));	  
+  for (int i=0; i<DEtab.Nbins; i++) 
+      DEtab.Factor[i] = exp(3.0*qromb(dark_energy_factor_integ,log(DEtab.ScaleFactor[i]),0.0,EPS));	  
  
-  spline(ScaleFactorTable, DarkEnergyEoSTable, SizeTable, 1.0e30, 1.0e30, DarkEnergyEoSTable_y2);   
-  spline(ScaleFactorTable, DarkEnergyFactorTable, SizeTable, 1.0e30, 1.0e30, DarkEnergyFactorTable_y2);   
+  spline(DEtab.ScaleFactor, DEtab.EoS, DEtab.Nbins, 1.0e30, 1.0e30, DEtab.EoS_y2);   
+  spline(DEtab.ScaleFactor, DEtab.Factor, DEtab.Nbins, 1.0e30, 1.0e30, DEtab.Factor_y2);   
 
 }
 
 double dark_energy_eos(double a)
 {	
-  int    indx;
-  double y2,y1,x2,x1,eos;
+  double eos;
 
-  if (UseTab_wEoS == 0) {
-
-     eos = w0EoS + waEoS*(1.0 - a);	  
-
-  } else {
-
-     splint(ScaleFactorTable, DarkEnergyEoSTable, DarkEnergyEoSTable_y2, SizeTable, a, &eos);
-
-  }
-
+  if (P.UseTab_wEoS == 0) 
+     eos = P.w0EoS + P.waEoS*(1.0 - a);	  
+  else 
+     splint(DEtab.ScaleFactor, DEtab.EoS, DEtab.EoS_y2, DEtab.Nbins, a, &eos);
+  
   return eos;
 }
 
@@ -79,25 +72,19 @@ double dark_energy_factor_integ(double lna)
 
 double dark_energy_factor(double a)
 {
-  int    indx;	
   double f;
 	
-  if (UseTab_wEoS == 0) {
-
-     if (a == 1.0 || (w0EoS == -1.0 && waEoS == 0.0)) {
+  if (P.UseTab_wEoS == 0) {
+     if (a == 1.0 || (P.w0EoS == -1.0 && P.waEoS == 0.0)) {
         f = 1.0;
-     } else if (w0EoS != -1.0 && waEoS == 0.0) {	
-        f = pow(a,-3.0*(1.0 + w0EoS));
+     } else if (P.w0EoS != -1.0 && P.waEoS == 0.0) {	
+        f = pow(a,-3.0*(1.0 + P.w0EoS));
      } else {
-	f = pow(a,-3.0*(1.0 + w0EoS + waEoS + waEoS*(1.0 - a)/log(a)));     
+	f = pow(a,-3.0*(1.0 + P.w0EoS + P.waEoS + P.waEoS*(1.0 - a)/log(a)));     
      }
-
-  } else {
-
-     splint(ScaleFactorTable, DarkEnergyFactorTable, DarkEnergyFactorTable_y2, SizeTable, a, &f);
-
-  }
-
+  } else 
+     splint(DEtab.ScaleFactor, DEtab.Factor, DEtab.Factor_y2, DEtab.Nbins, a, &f);
+  
   return f;
 }
 
@@ -105,14 +92,13 @@ double dark_energy_factor(double a)
 
 double hubble_parameter(double a)
 {
-  double h;
 
-  h = OmegaMatter0 / pow(a,3)
-    + OmegaCurvature0 / pow(a,2)
-    + OmegaRadiation0 / pow(a,4)
-    + OmegaDarkEnergy0 * dark_energy_factor(a);
+  double h = P.OmegaMatter / pow(a,3)
+           + P.OmegaCurvature / pow(a,2)
+           + P.OmegaRadiation / pow(a,4)
+           + P.OmegaDarkEnergy * dark_energy_factor(a);
 
-  h = Hubble0*sqrt(h);  
+  h = P.Hubble*sqrt(h);  
 
   return h;
 }
@@ -121,26 +107,25 @@ double hubble_parameter(double a)
 
 void density_parameters(double a, double *omega_r, double *omega_m, double *omega_k, double *omega_de)
 {
-  double evol = pow(Hubble0/hubble_parameter(a),2);
+  double evol = pow(P.Hubble/hubble_parameter(a),2);
 
-  *omega_r  = evol * OmegaRadiation0 / pow(a,4);;
-  *omega_m  = evol * OmegaMatter0 / pow(a,3);
-  *omega_k  = evol * OmegaCurvature0 / pow(a,2);
-  *omega_de = evol * OmegaDarkEnergy0 * dark_energy_factor(a);
+  *omega_r  = evol * P.OmegaRadiation / pow(a,4);;
+  *omega_m  = evol * P.OmegaMatter / pow(a,3);
+  *omega_k  = evol * P.OmegaCurvature / pow(a,2);
+  *omega_de = evol * P.OmegaDarkEnergy * dark_energy_factor(a);
 }
 
 // Growth factor - 1st order
 
 void growth_factor_ode(double lna, double y[], double dydx[])
 {
-  double a,F1,F2;
+  double a = exp(lna);
   double omega_r,omega_m,omega_k,omega_de;
 
-  a = exp(lna);
   density_parameters(a,&omega_r,&omega_m,&omega_k,&omega_de);
 
-  F1 = 2.5 + 0.5*(omega_k - omega_r - 3.0*dark_energy_eos(a)*omega_de);
-  F2 = 2.0*omega_k + omega_r + 1.5*(1.0 - dark_energy_eos(a))*omega_de;
+  double F1 = 2.5 + 0.5*(omega_k - omega_r - 3.0*dark_energy_eos(a)*omega_de);
+  double F2 = 2.0*omega_k + omega_r + 1.5*(1.0 - dark_energy_eos(a))*omega_de;
 
   dydx[1] = y[2];
   dydx[2] = - y[2]*F1 - y[1]*F2;
@@ -151,15 +136,15 @@ void growth_factor(double a, double *dplus, double *fomega)
 {
   int    N = 2;
   int    nok,nbad;
-  double *ystart,hmin,hini,aini;
+  double *ystart;
 
   ystart = vector(1,N);
   ystart[1] = 1.0;
   ystart[2] = 0.0;
 
-  aini = 1.0e-5;
-  hmin = 0.0;
-  hini = EPS;
+  double aini = 1.0e-5;
+  double hmin = 0.0;
+  double hini = EPS;
 
   odeint(ystart,N,log(aini),log(a),EPS,hini,hmin,&nok,&nbad,growth_factor_ode,rkqs);
   *dplus = ystart[1]*a;
@@ -172,42 +157,37 @@ void growth_factor(double a, double *dplus, double *fomega)
 
 void set_dplus_spline(void) 
 {
-  double aini,aend,da;
-  int    i;
+  Gtab.Nbins = P.Nbins*10;
+  double aini = -6.0;
+  double aend = log10(1.0/(1.0 + P.FinalRedshift));
+  double da = (aend - aini)/(double)Gtab.Nbins;
   double fomega;
-
-  Ntab = Nbins*10;
-  aini = -6.0;
-  aend = log10(1.0/(1.0 + FinalRedshift));
-  da = (aend - aini)/(double)Ntab;
   
-  ScaleFactor = (double *) malloc(Ntab*sizeof(double));
-  Growth_of_a = (double *) malloc(Ntab*sizeof(double));
-  Growth_y2 = (double *) malloc(Ntab*sizeof(double));
+  Gtab.ScaleFactor = (double *) malloc(Gtab.Nbins*sizeof(double));
+  Gtab.Growth = (double *) malloc(Gtab.Nbins*sizeof(double));
+  Gtab.Growth_y2 = (double *) malloc(Gtab.Nbins*sizeof(double));
 
-  for (i=0; i<Ntab; i++) {
-      ScaleFactor[i] = pow(10.0,aini + da*(double)(i+1));
-      growth_factor(ScaleFactor[i], &Growth_of_a[i], &fomega);	  
+  for (int i=0; i<Gtab.Nbins; i++) {
+      Gtab.ScaleFactor[i] = pow(10.0,aini + da*(double)(i+1));
+      growth_factor(Gtab.ScaleFactor[i], &Gtab.Growth[i], &fomega);	  
   }
 
-  spline(ScaleFactor, Growth_of_a, Ntab, 1.0e30, 1.0e30, Growth_y2);   
+  spline(Gtab.ScaleFactor, Gtab.Growth, Gtab.Nbins, 1.0e30, 1.0e30, Gtab.Growth_y2);   
 
 }
 
 void growth_factor_2_ode(double lna, double y[], double dydx[])
 {
-  int    indx;	
-  double dplus,a,F1,F2,F3,fomega;
-  double omega_r,omega_m,omega_k,omega_de;
+  double a = exp(lna);
+  double omega_r,omega_m,omega_k,omega_de,dplus;
 
-  a = exp(lna);
   density_parameters(a,&omega_r,&omega_m,&omega_k,&omega_de);
   
-  splint(ScaleFactor, Growth_of_a, Growth_y2, Ntab, a, &dplus);
+  splint(Gtab.ScaleFactor, Gtab.Growth, Gtab.Growth_y2, Gtab.Nbins, a, &dplus);
 
-  F1 = 2.5 + 0.5*(omega_k - omega_r - 3.0*dark_energy_eos(a)*omega_de);
-  F2 = 2.0*omega_k + omega_r + 1.5*(1.0 - dark_energy_eos(a))*omega_de;
-  F3 = 1.5*omega_m*pow(dplus,2)/a;
+  double F1 = 2.5 + 0.5*(omega_k - omega_r - 3.0*dark_energy_eos(a)*omega_de);
+  double F2 = 2.0*omega_k + omega_r + 1.5*(1.0 - dark_energy_eos(a))*omega_de;
+  double F3 = 1.5*omega_m*pow(dplus,2)/a;
 
   dydx[1] = y[2];
   dydx[2] = - y[2]*F1 - y[1]*F2 - F3;
@@ -218,16 +198,14 @@ void growth_factor_2(double a, double *dplus_2, double *fomega_2)
 {
   int    N = 2;
   int    nok,nbad;
-  double *ystart,hmin,hini,aini;
-
-  aini = 1.0e-5;
+  double *ystart;
+  double aini = 1.0e-5;
+  double hmin = 0.0;
+  double hini = EPS;
 
   ystart = vector(1,N);
   ystart[1] = -(3.0/7.0)*aini;
   ystart[2] = (70./9.0)*aini;
-
-  hmin = 0.0;
-  hini = EPS;
 
   odeint(ystart,N,log(aini),log(a),EPS,hini,hmin,&nok,&nbad,growth_factor_2_ode,rkqs);
   *dplus_2 = ystart[1]*a;

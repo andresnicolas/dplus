@@ -1,6 +1,5 @@
 
-#include "allvars.h"
-#include "proto.h"
+#include "numrec.h"
 
 void nrerror(char error_text[])
 {

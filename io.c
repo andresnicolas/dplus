@@ -1,6 +1,7 @@
 
-#include "allvars.h"
-#include "proto.h"
+#include "io.h"
+
+struct global_parameters P;
 
 void read_inputfile(char *filename)
 {
@@ -20,60 +21,56 @@ void read_inputfile(char *filename)
 
   nt = 0;
 
-  strcpy(tag[nt],"OmegaMatter0");
-  addr[nt] = &OmegaMatter0;
+  strcpy(tag[nt],"OmegaMatter");
+  addr[nt] = &P.OmegaMatter;
   id[nt++] = FLOAT;
 
-  strcpy(tag[nt],"OmegaRadiation0");
-  addr[nt] = &OmegaRadiation0;
+  strcpy(tag[nt],"OmegaRadiation");
+  addr[nt] = &P.OmegaRadiation;
   id[nt++] = FLOAT;
 
-  strcpy(tag[nt],"OmegaCurvature0");
-  addr[nt] = &OmegaCurvature0;
+  strcpy(tag[nt],"OmegaCurvature");
+  addr[nt] = &P.OmegaCurvature;
   id[nt++] = FLOAT;
 
-  strcpy(tag[nt],"OmegaDarkEnergy0");
-  addr[nt] = &OmegaDarkEnergy0;
+  strcpy(tag[nt],"OmegaDarkEnergy");
+  addr[nt] = &P.OmegaDarkEnergy;
   id[nt++] = FLOAT;
 
   strcpy(tag[nt],"w0EoS");
-  addr[nt] = &w0EoS;
+  addr[nt] = &P.w0EoS;
   id[nt++] = FLOAT;
   
   strcpy(tag[nt],"waEoS");
-  addr[nt] = &waEoS;
+  addr[nt] = &P.waEoS;
   id[nt++] = FLOAT;
 
-  strcpy(tag[nt],"Hubble0");
-  addr[nt] = &Hubble0;
+  strcpy(tag[nt],"Hubble");
+  addr[nt] = &P.Hubble;
   id[nt++] = FLOAT;
 
   strcpy(tag[nt],"UseTab_wEoS");
-  addr[nt] = &UseTab_wEoS;
-  id[nt++] = INT;
-
-  strcpy(tag[nt],"SecondOrderDplus");
-  addr[nt] = &SecondOrderDplus;
+  addr[nt] = &P.UseTab_wEoS;
   id[nt++] = INT;
 
   strcpy(tag[nt],"wEoSFile");
-  addr[nt] = wEoSFile;
+  addr[nt] = P.wEoSFile;
   id[nt++] = STRING;
 
   strcpy(tag[nt],"OutputFile");
-  addr[nt] = OutputFile;
+  addr[nt] = P.OutputFile;
   id[nt++] = STRING;
 
   strcpy(tag[nt],"InitialRedshift");
-  addr[nt] = &InitialRedshift;
+  addr[nt] = &P.InitialRedshift;
   id[nt++] = FLOAT;
 
   strcpy(tag[nt],"FinalRedshift");
-  addr[nt] = &FinalRedshift;
+  addr[nt] = &P.FinalRedshift;
   id[nt++] = FLOAT;
 
   strcpy(tag[nt],"Nbins");
-  addr[nt] = &Nbins;
+  addr[nt] = &P.Nbins;
   id[nt++] = INT;
 
   if ((fd = fopen(filename, "r"))) {

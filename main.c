@@ -1,17 +1,14 @@
-/* March 27, 2020 - Andrés Nicolás Ruiz */
 
-#include "allvars.h"
-#include "proto.h"
+#include "io.h"
+#include "cosmology.h"
 
 int main(int argc, char **argv)
 {
-  int    i;
-  double D1,D2,f1,f2;
-  double dplus,fomega,dplus_2,fomega_2;
-  double aini,aend,da,a,z,dnorm;
+
+  double dplus,dplus_2,fit_dplus,fit_dplus_2;	
+  double fomega,fomega_2,fit_fomega,fit_fomega_2;	
   double omega_r,omega_m,omega_k,omega_de;
-  FILE   *fd;
-  	
+
   if (argc < 2) {
       fprintf(stdout, "\n Error. Missing input file.\n");
       fprintf(stdout, "./dplus.x <input_param>\n\n");
@@ -19,43 +16,40 @@ int main(int argc, char **argv)
   }
 
   read_inputfile(argv[1]);
+  if (P.UseTab_wEoS == 1) set_dark_energy_tables();
+  set_dplus_spline();
 
-  if (UseTab_wEoS == 1) set_dark_energy_tables();
-  if (SecondOrderDplus == 1) set_dplus_spline();
+  double aini = log10(1.0/(1.0 + P.InitialRedshift));
+  double aend = log10(1.0/(1.0 + P.FinalRedshift));
+  double da = (aend - aini)/(double)(P.Nbins-1);
 
-  growth_factor(1.0, &dnorm, &fomega);	  
-  aini = log10(1.0/(1.0 + InitialRedshift));
-  aend = log10(1.0/(1.0 + FinalRedshift));
-  da = (aend - aini)/(double)(Nbins-1);
+  FILE *fd = fopen(P.OutputFile,"w");
 
-  fd = fopen(OutputFile,"w");
-  
-  for (i=0; i<Nbins; i++) {
+  for (int i=0; i<P.Nbins; i++) {
 
-      a = pow(10.0,aini + da*(double)i);
-      z = 1.0/a - 1.0;
+      double a = pow(10.0,aini + da*(double)i);
+      double z = 1.0/a - 1.0;
 
       density_parameters(a, &omega_r,&omega_m, &omega_k, &omega_de);
       growth_factor(a, &dplus, &fomega);
-      fitting_formulas(a, &D1, &D2, &f1, &f2); 
+      growth_factor_2(a, &dplus_2, &fomega_2);	
+      fitting_formulas(a, &fit_dplus, &fit_dplus_2, &fit_fomega, &fit_fomega_2); 
 
-      if (SecondOrderDplus == 1) {
-	 growth_factor_2(a, &dplus_2, &fomega_2);	
-         fprintf(fd,"%10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e \n",
-         	      a,z,omega_r,omega_m,omega_k,omega_de,hubble_parameter(a),dplus,fomega,D1,f1,dplus_2,fomega_2,D2,f2);
-      } else {
-         fprintf(fd,"%10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e \n",
-         	      a,z,omega_r,omega_m,omega_k,omega_de,hubble_parameter(a),dplus,fomega,D1,f1);
-      }
+      fprintf(fd,"%10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e \n",
+      	      a,z,omega_r,omega_m,omega_k,omega_de,hubble_parameter(a),dplus,fomega,fit_dplus,fit_fomega,dplus_2,fomega_2,
+	      fit_dplus_2,fit_fomega_2);
   }
- 
-  fclose(fd);
 
-  if (SecondOrderDplus == 1) {
-     free(ScaleFactor);
-     free(Growth_of_a);
-     free(Growth_y2);
+  if (P.UseTab_wEoS == 1) {
+     free(DEtab.ScaleFactor); 
+     free(DEtab.EoS);         
+     free(DEtab.Factor);      
+     free(DEtab.EoS_y2);      
+     free(DEtab.Factor_y2);   
   }
+  free(Gtab.ScaleFactor);  
+  free(Gtab.Growth);       
+  free(Gtab.Growth_y2);    
 
 }
 
