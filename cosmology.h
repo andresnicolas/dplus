@@ -17,7 +17,6 @@ struct growth_table {
 };
 extern struct growth_table Gtab;
 
-int count_lines(char *filename);
 void set_dark_energy_tables(void);
 void set_dplus_spline(void);
 double dark_energy_eos(double a);

@@ -1,1 +1,7 @@
-Same as dplus but includes 2nd order Growth Factor computations and some fitting formulas.
+
+Code to numerically solve the second order differential equation for the linear growth factor of
+density perturbations of first and second order (D(a) and D2(a), respectively) with an arbitrary
+dark energy equation of state w(a)
+
+Andrés Nicolás Ruiz - andres.ruiz@unc.edu.ar
+Last version 04/28/2022

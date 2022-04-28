@@ -1,4 +1,5 @@
 
+#include "tools.h"
 #include "io.h"
 #include "cosmology.h"
 #include "numrec.h"
@@ -6,25 +7,8 @@
 struct eos_table DEtab;
 struct growth_table Gtab;
 
-int count_lines(char *filename) 
-{
-    FILE *fp; 
-    int  count = 0;
-    char string[256];
 
-    fp = fopen(filename, "r");
-    if (fp == NULL) {
-       fprintf(stdout,"Error. %s doesn't exist \n",filename);
-       exit(EXIT_FAILURE);
-    }
-    
-    while (fgets(string,256,fp)) count++;
-    fclose(fp);
-
-    return count;
-}
-
-// Dark energy EoS 
+/* Dark energy equation of state */ 
 
 void set_dark_energy_tables(void)
 {
@@ -62,7 +46,7 @@ double dark_energy_eos(double a)
   return eos;
 }
 
-// Dark energy evolution factor
+/* Dark energy evolution factor */
 
 double dark_energy_factor_integ(double lna)
 {
@@ -88,7 +72,7 @@ double dark_energy_factor(double a)
   return f;
 }
 
-// Hubble parameter
+/* Hubble parameter */
 
 double hubble_parameter(double a)
 {
@@ -103,7 +87,7 @@ double hubble_parameter(double a)
   return h;
 }
 
-// Density parameters 
+/* Density parameters */ 
 
 void density_parameters(double a, double *omega_r, double *omega_m, double *omega_k, double *omega_de)
 {
@@ -115,7 +99,7 @@ void density_parameters(double a, double *omega_r, double *omega_m, double *omeg
   *omega_de = evol * P.OmegaDarkEnergy * dark_energy_factor(a);
 }
 
-// Growth factor - 1st order
+/* Growth factor D(a) and f = dlogD/dloga - 1st order */
 
 void growth_factor_ode(double lna, double y[], double dydx[])
 {
@@ -153,7 +137,7 @@ void growth_factor(double a, double *dplus, double *fomega)
   free_vector(ystart,1,N);
 }
 
-// Growth factor - 2nd order
+/* Growth factor D2(a) and f2 = dlogD2/dloga - 2nd order */
 
 void set_dplus_spline(void) 
 {
@@ -214,8 +198,8 @@ void growth_factor_2(double a, double *dplus_2, double *fomega_2)
   free_vector(ystart,1,N);
 }
 
-// Fitting formulas (Bernardeau et al. 2002, Physics Reports, 367, 1).
-// WARNING: These formulas are truly valid for LCDM cosmologies.
+/* Fitting formulas (Bernardeau et al. 2002, Physics Reports, 367, 1).
+   These formulas are truly valid for LCDM cosmologies. */
 
 double fitting_formulas(double a, double *D1, double *D2, double *f1, double *f2)
 {

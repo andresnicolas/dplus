@@ -1,8 +1,8 @@
 EXEC = dplus.x
 
-OBJS = main.o io.o numrec.o cosmology.o 
+OBJS = main.o tools.o io.o numrec.o cosmology.o 
 
-INCL = io.h numrec.h cosmology.h Makefile
+INCL = tools.h io.h numrec.h cosmology.h Makefile
 
 OPTIONS = $(OPT)
 

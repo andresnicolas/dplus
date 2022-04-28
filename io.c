@@ -1,7 +1,12 @@
 
+#include "tools.h"
 #include "io.h"
 
+/* Input parameters */
+
 struct global_parameters P;
+
+/* Read input file. Routine adapted from Gadget-2 (Springel 2005) */
 
 void read_inputfile(char *filename)
 {
@@ -17,7 +22,7 @@ void read_inputfile(char *filename)
   FILE *fd;
   char buf[200],buf1[200];
   char buf2[200],buf3[200];
-  int  errorFlag = 0;
+  char error_text[500];
 
   nt = 0;
 
@@ -108,27 +113,25 @@ void read_inputfile(char *filename)
 
 		}
 	    } else {
-		fprintf(stdout, "Error in file %s:  Tag '%s' not allowed or multiple defined. \n", filename, buf1);
-	        errorFlag = 1;
+		sprintf(error_text,"Tag '%s' not allowed or multiple defined. \n",buf1);    
+		error(error_text);
 	    }
 	}
         fclose(fd);
 
   } else {
 
-	fprintf(stdout, "Error. Parameter file %s not found.\n", filename);
-        errorFlag = 1;
+	sprintf(error_text, "Parameter file %s not found.\n", filename);  
+        error(error_text);	
 
   }
 
   for(i = 0; i < nt; i++) {
       if(*tag[i]) {
-	  fprintf(stdout, "Error. I miss a value for tag '%s' in parameter file '%s'.\n", tag[i], filename);
-	  errorFlag = 1;
+	  sprintf(error_text, "I miss a value for tag '%s'.\n", tag[i]);
+	  error(error_text);
 	}
   }
-
-  if(errorFlag) exit(EXIT_FAILURE);
 
 #undef FLOAT
 #undef STRING

@@ -12,7 +12,6 @@
 #define JMAX 40
 #define JMAXP (JMAX+1)
 #define KK 5
-#define FUNC(x) ((*func)(x))
 #define NR_END 1
 #define FREE_ARG char*
 
@@ -20,7 +19,6 @@
 #define FMIN(a,b) (a < b ? a : b)
 #define SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
 
-void nrerror(char error_text[]);
 double *vector(long nl, long nh);
 void free_vector(double *v, long nl, long nh);
 double **matrix(long nrl, long nrh, long ncl, long nch);
