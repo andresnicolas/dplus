@@ -13,7 +13,7 @@ int count_lines(char *filename)
     fp = fopen(filename, "r");
     if (fp == NULL) {
        sprintf(error_text,"File %s not found \n",filename);	   
-       error(text_error); 
+       error(error_text); 
     }
     
     while (fgets(string,256,fp)) count++;
