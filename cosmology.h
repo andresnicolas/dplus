@@ -23,10 +23,10 @@ double dark_energy_eos(double a);
 double dark_energy_factor_integ(double lna);
 double dark_energy_factor(double a);
 double hubble_parameter(double a);
-void density_parameters(double a, double *omega_r, double *omega_m, double *omega_k, double *omega_de);
+void density_parameters(double a, double *omega_m, double *omega_k, double *omega_de);
 void growth_factor_ode(double lna, double y[], double dydx[]);
 void growth_factor(double a, double *dplus, double *fomega);
 void growth_factor_2_ode(double lna, double y[], double dydx[]);
 void growth_factor_2(double a, double *dplus_2, double *fomega_2);
-double fitting_formulas(double a, double *D1, double *D2, double *f1, double *f2);
+void fitting_formulas(double a, double *D1, double *D2, double *f1, double *f2);
 

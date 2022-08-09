@@ -78,8 +78,7 @@ double hubble_parameter(double a)
 {
 
   double h = P.OmegaMatter / pow(a,3)
-           + P.OmegaCurvature / pow(a,2)
-           + P.OmegaRadiation / pow(a,4)
+           + (1.0 - P.OmegaMatter - P.OmegaDarkEnergy) / pow(a,2)
            + P.OmegaDarkEnergy * dark_energy_factor(a);
 
   h = P.Hubble*sqrt(h);  
@@ -89,13 +88,12 @@ double hubble_parameter(double a)
 
 /* Density parameters */ 
 
-void density_parameters(double a, double *omega_r, double *omega_m, double *omega_k, double *omega_de)
+void density_parameters(double a, double *omega_m, double *omega_k, double *omega_de)
 {
   double evol = pow(P.Hubble/hubble_parameter(a),2);
 
-  *omega_r  = evol * P.OmegaRadiation / pow(a,4);;
   *omega_m  = evol * P.OmegaMatter / pow(a,3);
-  *omega_k  = evol * P.OmegaCurvature / pow(a,2);
+  *omega_k  = evol * (1.0 - P.OmegaMatter - P.OmegaDarkEnergy) / pow(a,2);
   *omega_de = evol * P.OmegaDarkEnergy * dark_energy_factor(a);
 }
 
@@ -104,12 +102,12 @@ void density_parameters(double a, double *omega_r, double *omega_m, double *omeg
 void growth_factor_ode(double lna, double y[], double dydx[])
 {
   double a = exp(lna);
-  double omega_r,omega_m,omega_k,omega_de;
+  double omega_m,omega_k,omega_de;
 
-  density_parameters(a,&omega_r,&omega_m,&omega_k,&omega_de);
-
-  double F1 = 2.5 + 0.5*(omega_k - omega_r - 3.0*dark_energy_eos(a)*omega_de);
-  double F2 = 2.0*omega_k + omega_r + 1.5*(1.0 - dark_energy_eos(a))*omega_de;
+  density_parameters(a,&omega_m,&omega_k,&omega_de);
+ 
+  double F1 = 2.5 + 0.5*(omega_k - 3.0*dark_energy_eos(a)*omega_de);
+  double F2 = 2.0*omega_k + 1.5*(1.0 - dark_energy_eos(a))*omega_de;
 
   dydx[1] = y[2];
   dydx[2] = - y[2]*F1 - y[1]*F2;
@@ -126,7 +124,7 @@ void growth_factor(double a, double *dplus, double *fomega)
   ystart[1] = 1.0;
   ystart[2] = 0.0;
 
-  double aini = 1.0e-5;
+  double aini = 1.0e-3;
   double hmin = 0.0;
   double hini = EPS;
 
@@ -142,7 +140,7 @@ void growth_factor(double a, double *dplus, double *fomega)
 void set_dplus_spline(void) 
 {
   Gtab.Nbins = P.Nbins*10;
-  double aini = -6.0;
+  double aini = log10(1.0e-3);
   double aend = log10(1.0/(1.0 + P.FinalRedshift));
   double da = (aend - aini)/(double)Gtab.Nbins;
   double fomega;
@@ -163,14 +161,14 @@ void set_dplus_spline(void)
 void growth_factor_2_ode(double lna, double y[], double dydx[])
 {
   double a = exp(lna);
-  double omega_r,omega_m,omega_k,omega_de,dplus;
+  double omega_m,omega_k,omega_de,dplus;
 
-  density_parameters(a,&omega_r,&omega_m,&omega_k,&omega_de);
+  density_parameters(a,&omega_m,&omega_k,&omega_de);
   
   splint(Gtab.ScaleFactor, Gtab.Growth, Gtab.Growth_y2, Gtab.Nbins, a, &dplus);
 
-  double F1 = 2.5 + 0.5*(omega_k - omega_r - 3.0*dark_energy_eos(a)*omega_de);
-  double F2 = 2.0*omega_k + omega_r + 1.5*(1.0 - dark_energy_eos(a))*omega_de;
+  double F1 = 2.5 + 0.5*(omega_k - 3.0*dark_energy_eos(a)*omega_de);
+  double F2 = 2.0*omega_k + 1.5*(1.0 - dark_energy_eos(a))*omega_de;
   double F3 = 1.5*omega_m*pow(dplus,2)/a;
 
   dydx[1] = y[2];
@@ -183,7 +181,7 @@ void growth_factor_2(double a, double *dplus_2, double *fomega_2)
   int    N = 2;
   int    nok,nbad;
   double *ystart;
-  double aini = 1.0e-5;
+  double aini = 1.0e-3;
   double hmin = 0.0;
   double hini = EPS;
 
@@ -201,12 +199,12 @@ void growth_factor_2(double a, double *dplus_2, double *fomega_2)
 /* Fitting formulas (Bernardeau et al. 2002, Physics Reports, 367, 1).
    These formulas are truly valid for LCDM cosmologies. */
 
-double fitting_formulas(double a, double *D1, double *D2, double *f1, double *f2)
+void fitting_formulas(double a, double *D1, double *D2, double *f1, double *f2)
 {
  
-  double omega_r, omega_m, omega_k, omega_de;
+  double omega_m, omega_k, omega_de;
 
-  density_parameters(a, &omega_r, &omega_m, &omega_k, &omega_de);
+  density_parameters(a, &omega_m, &omega_k, &omega_de);
 
   // Growth factor
 

@@ -30,14 +30,6 @@ void read_inputfile(char *filename)
   addr[nt] = &P.OmegaMatter;
   id[nt++] = FLOAT;
 
-  strcpy(tag[nt],"OmegaRadiation");
-  addr[nt] = &P.OmegaRadiation;
-  id[nt++] = FLOAT;
-
-  strcpy(tag[nt],"OmegaCurvature");
-  addr[nt] = &P.OmegaCurvature;
-  id[nt++] = FLOAT;
-
   strcpy(tag[nt],"OmegaDarkEnergy");
   addr[nt] = &P.OmegaDarkEnergy;
   id[nt++] = FLOAT;

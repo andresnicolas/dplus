@@ -9,8 +9,6 @@ struct global_parameters {
    char   OutputFile[500];
    char   wEoSFile[500];
    double OmegaMatter;
-   double OmegaRadiation;
-   double OmegaCurvature;
    double OmegaDarkEnergy;
    double Hubble;
    double w0EoS;

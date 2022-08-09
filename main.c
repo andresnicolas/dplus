@@ -7,7 +7,7 @@ int main(int argc, char **argv)
 
   double dplus,dplus_2,fit_dplus,fit_dplus_2;	
   double fomega,fomega_2,fit_fomega,fit_fomega_2;	
-  double omega_r,omega_m,omega_k,omega_de;
+  double omega_m,omega_k,omega_de;
 
   if (argc < 2) {
       fprintf(stdout, "\n Error. Missing input file.\n");
@@ -30,14 +30,14 @@ int main(int argc, char **argv)
       double a = pow(10.0,aini + da*(double)i);
       double z = 1.0/a - 1.0;
 
-      density_parameters(a, &omega_r,&omega_m, &omega_k, &omega_de);
+      density_parameters(a, &omega_m, &omega_k, &omega_de);
       growth_factor(a, &dplus, &fomega);
       growth_factor_2(a, &dplus_2, &fomega_2);	
       fitting_formulas(a, &fit_dplus, &fit_dplus_2, &fit_fomega, &fit_fomega_2); 
 
-      fprintf(fd,"%10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e \n",
-      	      a,z,omega_r,omega_m,omega_k,omega_de,hubble_parameter(a),dplus,fomega,fit_dplus,fit_fomega,dplus_2,fomega_2,
-	      fit_dplus_2,fit_fomega_2);
+      fprintf(fd,"%10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e %10.8e \n",
+      	      a,z,omega_m,omega_k,omega_de,hubble_parameter(a),dplus,fomega,fit_dplus,fit_fomega,dplus_2,fomega_2,
+              fit_dplus_2,fit_fomega_2);
   }
 
   if (P.UseTab_wEoS == 1) {
